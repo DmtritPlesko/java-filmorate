@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/films")
 public class FilmDbController {
-    private FilmDbService filmService;
+    private final FilmDbService filmService;
 
     @Autowired
     public FilmDbController(FilmDbService filmService) {
@@ -52,7 +52,7 @@ public class FilmDbController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(defaultValue = "10") Long limit) {
-        return filmService.getPopularFilm(limit);
+    public List<Film> getPopular(@RequestParam(defaultValue = "10") Long count) {
+        return filmService.getPopularFilm(count);
     }
 }

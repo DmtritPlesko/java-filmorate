@@ -2,16 +2,18 @@ package ru.yandex.practicum.filmorate.controller.dataBase;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserDbService;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/users")
 public class UserDbController {
-    private UserDbService userDbService;
+    private final UserDbService userDbService;
 
     @Autowired
     public UserDbController(UserDbService userDbService) {
@@ -57,7 +59,12 @@ public class UserDbController {
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public Set<User> getMutualFriend(@PathVariable("id") Long userId,
-                                      @PathVariable("otherId") Long otherId) {
+                                     @PathVariable("otherId") Long otherId) {
         return userDbService.getMutualFriend(userId, otherId);
+    }
+
+    @GetMapping("/{id}/recommendations")
+    public Collection<Film> getRecommendations(@PathVariable("id") Long userId) {
+        return userDbService.getRecommendations(userId);
     }
 }

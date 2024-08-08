@@ -11,10 +11,8 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
-import ru.yandex.practicum.filmorate.mappers.GenresMapper;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorageInterface;
-import ru.yandex.practicum.filmorate.storage.dao.genres.FilmGenresDbStorage;
 
 import java.sql.*;
 import java.sql.Date;
@@ -29,7 +27,7 @@ import java.util.*;
 public class FilmDbStorage implements FilmStorageInterface {
 
     private final JdbcTemplate jdbcTemplate;
-    private final FilmGenresDbStorage genresDbStorage;
+    private final FilmRowMapper filmRowMapper;
 
     @Override
     public Film addNewFilm(Film film) {
@@ -95,17 +93,38 @@ public class FilmDbStorage implements FilmStorageInterface {
     @Override
     public Film getFilmByID(Long id) {
         log.info("Фильм с id = {} ", id);
-        String sqlQuery = "SELECT * FROM films " +
-                "LEFT JOIN mpa ON films.mpa_id = mpa.mpa_id " +
-                "WHERE films.film_id = ?;";
+        String sqlQuery = "SELECT f.*, l.user_id, fg.genre_id, g.name_genres AS genre_name, m.mpa_name FROM films f " +
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "LEFT JOIN filmgenres fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "WHERE f.film_id = ?;";
+
         try {
-            Film film = jdbcTemplate.queryForObject(sqlQuery, FilmRowMapper::mapRow, id);
-            final String sqlQueryGenres = "SELECT * FROM filmgenres " +
-                    "LEFT JOIN genres " +
-                    "ON filmgenres.genre_id = genres.genre_id " +
-                    "WHERE filmgenres.film_id = ?;";
-            film.setGenres(new HashSet<>(jdbcTemplate.query(sqlQueryGenres, GenresMapper::mapRow, id)));
-            return film;
+            Map<Long, Film> filmMap = new HashMap<>();
+
+            jdbcTemplate.query(sqlQuery, rs -> {
+                Long filmId = rs.getLong("film_id");
+                Film film = filmMap.get(filmId);
+                if (film == null) {
+                    film = filmRowMapper.mapRow(rs, rs.getRow());
+                    filmMap.put(filmId, film);
+                }
+                // Добавляем лайки и жанры
+                if (rs.getLong("user_id") != 0) {
+                    film.getLikes().add(rs.getLong("user_id"));
+                }
+                if (rs.getLong("genre_id") != 0) {
+                    Genre genre = new Genre(rs.getLong("genre_id"), rs.getString("genre_name"));
+                    film.getGenres().add(genre);
+                }
+            }, id);
+
+            if (filmMap.isEmpty()) {
+                throw new NotFoundException("Фильм с id=" + id + " не найден");
+            }
+
+            return filmMap.values().iterator().next();
         } catch (IncorrectResultSizeDataAccessException e) {
             throw new NotFoundException("Фильм с id=" + id + " не найден");
         }
@@ -113,14 +132,34 @@ public class FilmDbStorage implements FilmStorageInterface {
 
     @Override
     public List<Film> allFilms() {
-        log.info("Список всех фильмов");
+        log.debug("Список всех фильмов");
 
-        String sqlQuery = "SELECT * FROM films " +
-                "LEFT JOIN mpa ON films.mpa_id = mpa.mpa_id " +
-                "LEFT JOIN filmgenres ON films.film_id = filmgenres.film_id " +
-                "LEFT JOIN genres ON filmgenres.genre_id = genres.genre_id " +
-                "LEFT JOIN likes ON likes.film_id = films.film_id;";
-        return jdbcTemplate.query(sqlQuery, FilmRowMapper::mapRow);
+        String sqlQuery = "SELECT f.*, l.user_id, fg.genre_id, g.name_genres AS genre_name, m.mpa_name FROM films f " +
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "LEFT JOIN filmgenres fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN mpa m ON f.mpa_id = m.mpa_id";
+
+        Map<Long, Film> filmMap = new HashMap<>();
+
+        jdbcTemplate.query(sqlQuery, rs -> {
+            Long filmId = rs.getLong("film_id");
+            Film film = filmMap.get(filmId);
+            if (film == null) {
+                film = filmRowMapper.mapRow(rs, rs.getRow());
+                filmMap.put(filmId, film);
+            }
+            // Добавляем лайки и жанры
+            if (rs.getLong("user_id") != 0) {
+                film.getLikes().add(rs.getLong("user_id"));
+            }
+            if (rs.getLong("genre_id") != 0) {
+                Genre genre = new Genre(rs.getLong("genre_id"), rs.getString("genre_name"));
+                film.getGenres().add(genre);
+            }
+        });
+
+        return new ArrayList<>(filmMap.values());
     }
 
 
@@ -144,13 +183,44 @@ public class FilmDbStorage implements FilmStorageInterface {
         jdbcTemplate.update(sqlQuery, id, userId);
     }
 
+    @Override
     public List<Film> getPopularFilm(Long limit) {
-        log.info("Популярные фильмы ");
-        String sqlQuery = "SELECT * FROM films " +
-                "INNER JOIN mpa ON films.mpa_id=mpa.mpa_id " +
-                "WHERE film_id IN ( SELECT likes.film_id as gg FROM likes GROUP BY (gg)  " +
-                "ORDER BY (count(likes.user_id)) Desc ) limit ?";
-        return jdbcTemplate.query(sqlQuery, FilmRowMapper::mapRow, new Object[]{limit});
+        log.info("Популярные фильмы");
+
+        String sqlQuery = "SELECT f.*, m.mpa_name, l.user_id, fg.genre_id, g.name_genres AS genre_name, COUNT(l.user_id) AS like_count " +
+                "FROM films f " +
+                "INNER JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "LEFT JOIN filmgenres fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
+                "GROUP BY f.film_id, m.mpa_name, l.user_id, fg.genre_id, g.name_genres " +
+                "ORDER BY like_count DESC " +
+                "LIMIT ?";
+
+        Map<Long, Film> filmMap = new LinkedHashMap<>();
+
+        jdbcTemplate.query(sqlQuery, rs -> {
+            Long filmId = rs.getLong("film_id");
+            Film film = filmMap.get(filmId);
+            if (film == null) {
+                film = filmRowMapper.mapRow(rs, rs.getRow());
+                filmMap.put(filmId, film);
+            }
+            // Добавляем лайки и жанры
+            if (rs.getLong("user_id") != 0) {
+                film.getLikes().add(rs.getLong("user_id"));
+            }
+            if (rs.getLong("genre_id") != 0) {
+                Genre genre = new Genre(rs.getLong("genre_id"), rs.getString("genre_name"));
+                film.getGenres().add(genre);
+            }
+        }, limit);
+
+        // Преобразуем в список и сортируем по количеству лайков
+        List<Film> films = new ArrayList<>(filmMap.values());
+        films.sort((f1, f2) -> Long.compare(f2.getLikes().size(), f1.getLikes().size()));
+
+        return films;
     }
 
 }
