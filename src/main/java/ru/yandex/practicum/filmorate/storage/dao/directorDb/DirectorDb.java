@@ -12,7 +12,8 @@ public interface DirectorDb {
 
     Director getDirectorById(Long id);
 
-    Director updateDirector (Director director);
+    Director updateDirector(Director director);
 
     void deleteDirectorById(Long id);
+
 }

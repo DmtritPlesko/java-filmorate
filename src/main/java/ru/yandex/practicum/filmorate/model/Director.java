@@ -12,4 +12,8 @@ public class Director {
     Long id;
 
     String name;
+
+    public Director(Long id) {
+        this.id = id;
+    }
 }

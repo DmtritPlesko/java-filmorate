@@ -19,4 +19,6 @@ public interface FilmStorageInterface {
     void deleteLike(Long id, Long userId);
 
     List<Film> getPopularFilm(Long limit);
+
+    List<Film> getFilmBySort(Long id,List<String> sortBy);
 }
