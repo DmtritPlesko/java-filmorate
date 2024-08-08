@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.dao.filmDb.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorageInterface;
+import ru.yandex.practicum.filmorate.storage.dao.filmDb.FilmDbStorage;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -15,8 +15,8 @@ import java.util.List;
 @Slf4j
 @Service
 public class FilmDbService {
-    private final FilmStorageInterface filmStorage;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private final FilmStorageInterface filmStorage;
 
 
     @Autowired

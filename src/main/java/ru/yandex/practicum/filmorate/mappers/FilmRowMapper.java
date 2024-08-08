@@ -8,7 +8,8 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Component
 public class FilmRowMapper implements RowMapper<Film> {

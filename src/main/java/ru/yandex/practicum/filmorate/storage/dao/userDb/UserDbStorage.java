@@ -28,6 +28,7 @@ import java.util.Set;
 @Primary
 public class UserDbStorage implements UserStorageInterface {
     private final JdbcTemplate jdbcTemplate;
+    private final UserRowMapper userRowMapper;
 
     @Override
     public User createUser(User user) {
@@ -79,7 +80,7 @@ public class UserDbStorage implements UserStorageInterface {
     public List<User> allUser() {
         log.info("Берём всех пользователей");
         String sqlQuery = "SELECT * FROM users;";
-        return jdbcTemplate.query(sqlQuery, UserRowMapper::mapRow);
+        return jdbcTemplate.query(sqlQuery, userRowMapper);
     }
 
     @Override
@@ -107,7 +108,7 @@ public class UserDbStorage implements UserStorageInterface {
     public User getUserById(Long id) {
         String sqlQuery = "SELECT * FROM users WHERE user_id = ?";
         try {
-            return jdbcTemplate.queryForObject(sqlQuery, new Object[]{id}, UserRowMapper::mapRow);
+            return jdbcTemplate.queryForObject(sqlQuery, new Object[]{id}, userRowMapper);
         } catch (IncorrectResultSizeDataAccessException e) {
             throw new NotFoundException("Пользователь с id=" + id + " не найден");
         }
@@ -119,7 +120,7 @@ public class UserDbStorage implements UserStorageInterface {
         log.info("все друзья пользователя с id = {}", userId);
         final String sqlQuery = "SELECT * FROM users u " +
                 "JOIN friends f ON u.user_id = f.friend_id WHERE f.user_id = ?";
-        return new HashSet<>(jdbcTemplate.query(sqlQuery, UserRowMapper::mapRow, userId));
+        return new HashSet<>(jdbcTemplate.query(sqlQuery, userRowMapper, userId));
     }
 
     @Override
@@ -131,7 +132,7 @@ public class UserDbStorage implements UserStorageInterface {
                 + "ON u.user_id = f.friend_id WHERE f.user_id = ? AND u.user_id "
                 + "IN (SELECT f.friend_id FROM friends f WHERE f.user_id = ?)";
         return new HashSet<>(jdbcTemplate.query(sqlQuery,
-                UserRowMapper::mapRow,
+                userRowMapper,
                 userId,
                 friendId));
     }

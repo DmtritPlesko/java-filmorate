@@ -1,7 +1,13 @@
 package ru.yandex.practicum.filmorate.model;
 
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
@@ -15,7 +21,7 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @EqualsAndHashCode(onlyExplicitlyIncluded = false)
 public class User {
-
+    @EqualsAndHashCode.Include
     Long id;
 
     String email;

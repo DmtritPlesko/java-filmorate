@@ -3,7 +3,10 @@ package ru.yandex.practicum.filmorate.storage.dao.filmDb;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,7 +16,8 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,8 +44,8 @@ public class FilmDbStorageTest {
         genres.add(genre1);
 
         Film film = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 1L, 150L,
-                new HashSet<Long>(likkes),
-                new HashSet<Genre>(genres), new Mpa(1));
+                new HashSet<>(likkes),
+                new HashSet<>(genres), new Mpa(1));
 
         long id = filmDbStorage.addNewFilm(film).getId();
 
@@ -63,8 +67,8 @@ public class FilmDbStorageTest {
         genres.add(genre1);
 
         Film film = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 1L, 150L,
-                new HashSet<Long>(likkes),
-                new HashSet<Genre>(genres), new Mpa(1));
+                new HashSet<>(likkes),
+                new HashSet<>(genres), new Mpa(1));
 
         filmDbStorage.addNewFilm(film);
         film.setName("NEW COLLER");
@@ -87,8 +91,8 @@ public class FilmDbStorageTest {
         genres.add(genre1);
 
         Film film = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 1L, 150L,
-                new HashSet<Long>(likkes),
-                new HashSet<Genre>(genres), new Mpa(1));
+                new HashSet<>(likkes),
+                new HashSet<>(genres), new Mpa(1));
 
         Film film1 = filmDbStorage.addNewFilm(film);
 
