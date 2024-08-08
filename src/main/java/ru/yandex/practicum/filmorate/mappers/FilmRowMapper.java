@@ -20,6 +20,7 @@ public class FilmRowMapper {
                 .releaseDate(rs.getDate("releaseDate").toLocalDate())
                 .mpa(mpa)
                 .likes(new LinkedHashSet<>())
+                .directors(new HashSet<>())
                 .build();
         return film;
     }

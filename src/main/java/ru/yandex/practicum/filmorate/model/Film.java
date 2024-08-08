@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -31,6 +30,8 @@ public class Film {
     Set<Long> likes;
 
     Set<Genre> genres;
+
+    Set<Director> directors;
 
     Mpa mpa;
 }

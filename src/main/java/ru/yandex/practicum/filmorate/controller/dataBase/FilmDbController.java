@@ -55,4 +55,10 @@ public class FilmDbController {
     public List<Film> getPopular(@RequestParam(defaultValue = "10") Long limit) {
         return filmService.getPopularFilm(limit);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> filmBySort(@PathVariable("directorId") Long id,
+                                 @RequestParam List<String> sortBy) {
+        return filmService.getFilmBySort(id, sortBy);
+    }
 }
