@@ -195,6 +195,13 @@ public class FilmDbStorage implements FilmStorageInterface {
     }
 
     @Override
+    public void deleteFilmByID(Long id) {
+        log.info("Удаление фильма с id = {}", id);
+        jdbcTemplate.update("DELETE FROM filmgenres WHERE film_id = ?", id);
+        jdbcTemplate.update("DELETE FROM films WHERE film_id = ?", id);
+    }
+
+    @Override
     public void takeLike(Long filmId, Long userId) {
         log.info("Пользователь с id = {} поставил лайк фильму с id = {}", userId, filmId);
         final String sqlQuery = "INSERT INTO likes (film_id,user_id) VALUES (?,?)";
