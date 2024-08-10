@@ -61,6 +61,10 @@ public class FilmDbService {
         filmStorage.deleteLike(id, userId);
     }
 
+    public void deleteFilmById(Long id) {
+        filmStorage.deleteFilmByID(id);
+    }
+
     private void checkValidation(Film film) {
         if (film.getName().isBlank()) {
             log.error("Название не может быть пустым");

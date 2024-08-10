@@ -114,6 +114,10 @@ public class UserDbService {
         return userFavouritesFilms;
     }
 
+    public void deleteUserById(Long id) {
+        userStorage.deleteUser(id);
+    }
+
     private void validation(User user) {
         if (StringUtils.isBlank(user.getEmail())) {
             throw new ValidationException("Электронная почта не может быть пустой");

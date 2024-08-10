@@ -59,6 +59,11 @@ public class UserDbController {
         userDbService.deleteFriendFromUser(userId, friendsId);
     }
 
+    @DeleteMapping("/{userId}")
+    public void deleteUserById(@PathVariable("userId") Long id) {
+        userDbService.deleteUserById(id);
+    }
+
     @GetMapping("/{id}/friends")
     public Set<User> getAllFriend(@PathVariable("id") Long userId) {
         return userDbService.allFriend(userId);

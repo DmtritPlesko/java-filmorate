@@ -42,6 +42,11 @@ public class FilmDbController {
         return filmService.getAllFilms();
     }
 
+    @DeleteMapping("/{filmId}")
+    public void deleteFilmById (@PathVariable("filmId") Long id) {
+        filmService.deleteFilmById(id);
+    }
+
     @PutMapping
     public Film updateFilm(@RequestBody Film film) {
         return filmService.updateFilm(film);
