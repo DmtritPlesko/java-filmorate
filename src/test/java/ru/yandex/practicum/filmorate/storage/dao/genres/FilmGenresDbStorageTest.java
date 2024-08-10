@@ -22,15 +22,15 @@ class FilmGenresDbStorageTest {
     public void getGenreById() {
         final Genre genre = filmStorage.getGenresById(1L);
 
-        assertThat(genre).hasFieldOrPropertyWithValue("id",1L);
+        assertThat(genre).hasFieldOrPropertyWithValue("id", 1L);
 
     }
 
     @Test
-    public void getAllGenre () {
+    public void getAllGenre() {
         List<Genre> genres = filmStorage.getAllGenres();
 
-        Assertions.assertEquals(genres.size(),6);
+        Assertions.assertEquals(genres.size(), 6);
     }
 
 }

@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.dao.userDb.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorageInterface;
+import ru.yandex.practicum.filmorate.storage.dao.userDb.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 @Slf4j
 @Service
 public class UserDbService {
-    private UserStorageInterface userStorage;
+    private final UserStorageInterface userStorage;
 
     @Autowired
     public UserDbService(UserDbStorage userStorage) {

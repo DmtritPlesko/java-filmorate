@@ -1,7 +1,14 @@
 package ru.yandex.practicum.filmorate.controller.dataBase;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserDbService;
 
@@ -9,14 +16,10 @@ import java.util.List;
 import java.util.Set;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserDbController {
-    private UserDbService userDbService;
-
-    @Autowired
-    public UserDbController(UserDbService userDbService) {
-        this.userDbService = userDbService;
-    }
+    private final UserDbService userDbService;
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable("id") Long id) {
@@ -62,7 +65,7 @@ public class UserDbController {
 
     @GetMapping("/{id}/friends/common/{otherId}")
     public Set<User> getMutualFriend(@PathVariable("id") Long userId,
-                                      @PathVariable("otherId") Long otherId) {
+                                     @PathVariable("otherId") Long otherId) {
         return userDbService.getMutualFriend(userId, otherId);
     }
 }

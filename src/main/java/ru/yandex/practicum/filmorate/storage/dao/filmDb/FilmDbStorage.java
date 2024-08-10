@@ -12,13 +12,16 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.mappers.GenresMapper;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorageInterface;
 import ru.yandex.practicum.filmorate.storage.dao.genres.FilmGenresDbStorage;
 
-import java.sql.*;
 import java.sql.Date;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.util.HashSet;
+import java.util.List;
 
 
 @Slf4j
@@ -113,7 +116,7 @@ public class FilmDbStorage implements FilmStorageInterface {
                     "LEFT JOIN genres " +
                     "ON filmgenres.genre_id = genres.genre_id " +
                     "WHERE filmgenres.film_id = ?;";
-            film.setGenres(new HashSet<>(jdbcTemplate.query(sqlQueryGenres, GenresMapper::mapRow, id)));
+            film.setGenres(new HashSet<>(jdbcTemplate.query(sqlQueryGenres, new GenresMapper(), id)));
             return film;
         } catch (IncorrectResultSizeDataAccessException e) {
             throw new NotFoundException("Фильм с id=" + id + " не найден");

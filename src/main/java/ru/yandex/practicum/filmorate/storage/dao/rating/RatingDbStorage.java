@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.mappers.RatingMapper;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
-
 import java.util.List;
 
 
