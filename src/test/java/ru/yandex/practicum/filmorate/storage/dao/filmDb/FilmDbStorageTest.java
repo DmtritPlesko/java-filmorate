@@ -79,36 +79,11 @@ public class FilmDbStorageTest {
 
     }
 
-    @Test
-    public void checkDeleteFilmAndGetAllFilms() {
-        Set<Long> likkes = new HashSet<>();
-        likkes.add(1L);
-        likkes.add(2L);
-
-        Genre genre = new Genre(1L, "qwe");
-        Genre genre1 = new Genre(2L, "Фильм");
-        Set<Genre> genres = new HashSet<>();
-        genres.add(genre);
-        genres.add(genre1);
-
-        Film film = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 1L, 150L,
-                new HashSet<Long>(likkes),
-                new HashSet<Genre>(genres), new Mpa(1));
-
-        filmDbStorage.addNewFilm(film);
-        List<Film> films = filmDbStorage.allFilms();
-        filmDbStorage.deleteFilm(film.getId());
-
-        List<Film> films1 = filmDbStorage.allFilms();
-        Assertions.assertNotEquals(films, films1);
-
-    }
-
-    @Test
-    public void checkCompareFilms() {
-        Set<Long> likkes = new HashSet<>();
-        likkes.add(1L);
-        likkes.add(2L);
+   @Test
+   public void checkCompareFilms() {
+      Set<Long> likkes = new HashSet<>();
+      likkes.add(1L);
+      likkes.add(2L);
 
         Genre genre = new Genre(1L, "qwe");
         Genre genre1 = new Genre(2L, "Фильм");

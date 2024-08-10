@@ -41,11 +41,6 @@ public class UserDbController {
         return userDbService.updateUser(user);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable("id") Long id) {
-        userDbService.deleteUser(id);
-    }
-
     @PutMapping("/{id}/friends/{friendsId}")
     public void addFriend(@PathVariable("id") Long userId,
                           @PathVariable("friendsId") Long friendsId) {

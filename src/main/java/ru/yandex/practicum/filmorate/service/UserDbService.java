@@ -58,10 +58,6 @@ public class UserDbService {
     }
 
     //delete
-    public void deleteUser(Long id) {
-        userStorage.deleteUser(id);
-    }
-
     public void deleteFriendFromUser(Long userId, Long friendId) {
         userStorage.deleteFriend(userId, friendId);
     }

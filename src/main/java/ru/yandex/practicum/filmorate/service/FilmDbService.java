@@ -55,10 +55,6 @@ public class FilmDbService {
     }
 
     //delete
-    public void deleteFilmById(Long id) {
-        filmStorage.deleteFilm(id);
-    }
-
     public void deleteLike(Long id, Long userId) {
         filmStorage.deleteLike(id, userId);
     }

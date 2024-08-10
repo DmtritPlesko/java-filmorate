@@ -41,11 +41,6 @@ public class FilmDbController {
         return filmService.updateFilm(film);
     }
 
-    @DeleteMapping("/{id}")
-    public void deleteFilmByID(@PathVariable("id") Long id) {
-        filmService.deleteFilmById(id);
-    }
-
     @PutMapping("/{id}/like/{userId}")
     public void takeLike(@PathVariable("id") Long filmId,
                          @PathVariable("userId") Long userId) {
