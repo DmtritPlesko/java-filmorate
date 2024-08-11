@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.mappers;
 
-import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.ResultSet;

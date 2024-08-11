@@ -60,4 +60,9 @@ public class FilmDbController {
     public List<Film> getPopular(@RequestParam(value = "count", defaultValue = "10") Long limit) {
         return filmService.getPopularFilm(limit);
     }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam long userId, @RequestParam long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
 }

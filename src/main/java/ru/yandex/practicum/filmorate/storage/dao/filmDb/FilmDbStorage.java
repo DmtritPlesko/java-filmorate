@@ -1,33 +1,26 @@
 package ru.yandex.practicum.filmorate.storage.dao.filmDb;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.fileupload.FileUpload;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
-import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.web.service.annotation.HttpExchange;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.mappers.GenresMapper;
-import ru.yandex.practicum.filmorate.mappers.UserRowMapper;
+import ru.yandex.practicum.filmorate.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorageInterface;
 import ru.yandex.practicum.filmorate.storage.dao.genres.FilmGenresDbStorage;
-import ru.yandex.practicum.filmorate.storage.dao.userDb.UserDbStorage;
 
 import java.sql.*;
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -38,8 +31,11 @@ import java.util.*;
 @Primary
 public class FilmDbStorage implements FilmStorageInterface {
 
+    private int review_id = 1;
     private final JdbcTemplate jdbcTemplate;
     private final FilmGenresDbStorage genresDbStorage;
+    private final String save = "INSERT INTO feeds (user_id, entity_id, event_type, operation, time_stamp) " +
+            "values (?, ?, ?, ?, ?)";
 
     @Override
     public Film addNewFilm(Film film) {
@@ -152,6 +148,7 @@ public class FilmDbStorage implements FilmStorageInterface {
             PreparedStatement pr = con.prepareStatement(sqlQuery);
             pr.setLong(1, filmId);
             pr.setLong(2, userId);
+        jdbcTemplate.update(save, userId, filmId, "LIKE", "ADD", LocalDateTime.now());
             return pr;
         });
     }
@@ -161,6 +158,7 @@ public class FilmDbStorage implements FilmStorageInterface {
         log.info("Пользователь с id = {} убрал лайк с фильму с id = {}", userId, id);
         final String sqlQuery = "delete from likes where film_id = ? and user_id = ?";
         jdbcTemplate.update(sqlQuery, id, userId);
+        jdbcTemplate.update(save, userId, id, "LIKE", "REMOVE", LocalDateTime.now());
     }
 
     public List<Film> getPopularFilm(Long limit) {
@@ -175,7 +173,116 @@ public class FilmDbStorage implements FilmStorageInterface {
                 "    ORDER BY COUNT(likes.user_id) DESC " +
                 "limit ?" +
                 ");";
-        return jdbcTemplate.query(sqlQuery, FilmRowMapper::mapRow,limit);
+        return jdbcTemplate.query(sqlQuery, FilmRowMapper::mapRow, limit);
     }
 
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        String request1 = "SELECT * FROM films " +
+                "left join mpa on films.mpa_id = mpa.mpa_id " +
+                "WHERE film_id IN (SELECT film_id FROM likes " +
+                "WHERE user_id = ? AND (SELECT film_id FROM likes WHERE user_id = ?))";
+        String request2 = "select * from filmgenres " +
+                "inner join genres on filmgenres.genre_id = genres.genre_id " +
+                "where filmgenres.film_id = ?;";
+        List<Film> films = jdbcTemplate.query(request1, FilmRowMapper::mapRow, userId, friendId);
+        for (Film film : films) {
+            film.setGenres(new HashSet<>(jdbcTemplate.query(request2, GenresMapper::mapRow, film.getId())));
+        }
+        return films;
+    }
+
+    public Review postReview(Review review) {
+        review.setReviewId(review_id);
+        review_id++;
+        String request = "INSERT INTO reviews(content, positive, user_id, film_id, useful) " +
+                "values(?, ?, ?, ?, ?)";
+        jdbcTemplate.update(request, review.getContent(), review.getIsPositive(),
+                review.getUserId(), review.getFilmId(), review.getUseful());
+        jdbcTemplate.update(save, review.getUserId(), review.getReviewId(), "REVIEW", "ADD", LocalDateTime.now());
+        System.out.println("Добавление комментария");
+        return review;
+    }
+
+    public Review putReview(Review review) {
+        String request = "UPDATE reviews SET " + "content = ?, positive = ?, user_id = ?, film_id = ?, useful = ? " +
+                "WHERE id = ?";
+        jdbcTemplate.update(request, review.getContent(), review.getIsPositive(), review.getUserId(),
+                review.getFilmId(), review.getUseful(), review.getReviewId());
+        jdbcTemplate.update(save, review.getUserId(), review.getReviewId(), "REVIEW", "UPDATE",
+                LocalDateTime.now());
+        System.out.println("Обновление комментария");
+        return review;
+    }
+
+    public Review getReview(long id) {
+        System.out.println("Получение комментария");
+        try {
+            String request = "SELECT * FROM reviews WHERE id = ?";
+            return jdbcTemplate.queryForObject(request, new ReviewRowMapper(), id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundException("Комментарий не найден");
+        }
+    }
+
+    public List<Review> getReviews(long filmId) {
+        System.out.println("Получение комментариев");
+        String request = "SELECT * FROM reviews WHERE film_id = ?";
+        return jdbcTemplate.query(request, new ReviewRowMapper(), filmId);
+    }
+
+    public List<Review> delReview(long id) {
+        Review review = getReview(id);
+        String request = "DELETE FROM reviews WHERE id = ?";
+        String request1 = "SELECT * FROM reviews";
+        jdbcTemplate.update(request, id);
+        jdbcTemplate.update(save, review.getUserId(), review.getReviewId(), "REVIEW", "REMOVE",
+                LocalDateTime.now());
+        return jdbcTemplate.query(request1, new ReviewRowMapper());
+    }
+
+    public Review addReviewLike(long id, long userId) {
+        System.out.println("Добавление лайка");
+        Review review = getReview(id);
+        String check = "DELETE FROM dislike_reviews WHERE user_id = ? AND review_id = ?";
+        int result = jdbcTemplate.update(check, id, userId);
+        if (result == 0) {
+            review.setUseful(review.getUseful() + 1);
+        } else {
+            review.setUseful(review.getUseful() + 2);
+        }
+        putReview(review);
+        String request = "INSERT INTO like_reviews(user_id, review_id) " + "values(?, ?)";
+        jdbcTemplate.update(request, id, userId);
+        return review;
+    }
+
+    public Review delReviewLike(long id, long userId) {
+        System.out.println("Удаление лайка");
+        Review review = getReview(id);
+        String check = "DELETE FROM like_reviews WHERE user_id = ? AND review_id = ?";
+        int result = jdbcTemplate.update(check, id, userId);
+        if (result == 1) {
+            review.setUseful(review.getUseful() - 1);
+        }
+        putReview(review);
+        String request = "DELETE FROM like_reviews WHERE user_id = ? AND review_id = ?";
+        jdbcTemplate.update(request, id, userId);
+        return review;
+    }
+
+    public Review addReviewDislike(long id, long userId) {
+        System.out.println("Добавление дизлайка");
+        Review review = getReview(id);
+        String check = "DELETE FROM like_reviews WHERE user_id = ? AND review_id = ?";
+        int result = jdbcTemplate.update(check, id, userId);
+        if (result == 1) {
+            review.setUseful(review.getUseful() - 2);
+        } else {
+            review.setUseful(review.getUseful() - 1);
+        }
+        putReview(review);
+        String request = "INSERT INTO dislike_reviews(user_id, review_id) " + "values(?, ?)";
+        jdbcTemplate.update(request, id, userId);
+        return review;
+    }
 }

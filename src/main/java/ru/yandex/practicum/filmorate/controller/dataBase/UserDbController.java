@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller.dataBase;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserDbService;
 
@@ -64,5 +65,10 @@ public class UserDbController {
     public List<User> getMutualFriend(@PathVariable("id") Long userId,
                                       @PathVariable("otherId") Long friendId) {
         return userDbService.getMutualFriend(userId, friendId);
+    }
+
+    @GetMapping("/{userId}/feed")
+    public List<Feed> getFeed(@PathVariable("userId") Long userId) {
+        return userDbService.getFeed(userId);
     }
 }
