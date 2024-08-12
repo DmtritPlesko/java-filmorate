@@ -24,20 +24,4 @@ public interface FilmStorageInterface {
     List<Film> getPopularFilm(Long limit);
 
     List<Film> getCommonFilms(long userId, long friendId);
-
-    Review postReview(Review review);
-
-    Review putReview(Review review);
-
-    Review getReview(long id);
-
-    List<Review> getReviews(long filmId);
-
-    List<Review> delReview(long id);
-
-    Review addReviewLike(long id, long userId);
-
-    Review delReviewLike(long id, long userId);
-
-    Review addReviewDislike(long id, long userId);
 }

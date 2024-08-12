@@ -6,19 +6,18 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.FilmStorageInterface;
-import ru.yandex.practicum.filmorate.storage.dao.filmDb.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.dao.reviewDb.ReviewDb;
 
 import java.util.List;
 
 @Slf4j
 @Service
 public class ReviewService {
-    private FilmStorageInterface filmStorage;
+    private ReviewDb reviewDb;
 
     @Autowired
-    public ReviewService(FilmDbStorage filmDbStorage) {
-        this.filmStorage = filmDbStorage;
+    public ReviewService(ReviewDb reviewDb) {
+        this.reviewDb = reviewDb;
     }
 
     public Review postReview(Review review) {
@@ -42,34 +41,34 @@ public class ReviewService {
             throw new ValidationException("Категория не может быть пустой");
         }
 
-        return filmStorage.postReview(review);
+        return reviewDb.postReview(review);
     }
 
     public Review putReview(Review review) {
-        return filmStorage.putReview(review);
+        return reviewDb.putReview(review);
     }
 
     public Review getReview(long id) {
-        return filmStorage.getReview(id);
+        return reviewDb.getReview(id);
     }
 
     public List<Review> getReviews(long filmId) {
-        return filmStorage.getReviews(filmId);
+        return reviewDb.getReviews(filmId);
     }
 
     public List<Review> delReview(long id) {
-        return filmStorage.delReview(id);
+        return reviewDb.delReview(id);
     }
 
     public Review addReviewLike(long id, long userId) {
-        return filmStorage.addReviewLike(id, userId);
+        return reviewDb.addReviewLike(id, userId);
     }
 
     public Review delReviewLike(long id, long userId) {
-        return filmStorage.delReviewLike(id, userId);
+        return reviewDb.delReviewLike(id, userId);
     }
 
     public Review addReviewDislike(long id, long user_id) {
-        return filmStorage.addReviewDislike(id, user_id);
+        return reviewDb.addReviewDislike(id, user_id);
     }
 }

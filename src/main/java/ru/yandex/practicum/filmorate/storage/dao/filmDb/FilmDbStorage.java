@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.mappers.GenresMapper;
-import ru.yandex.practicum.filmorate.mappers.ReviewRowMapper;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.FilmStorageInterface;
 import ru.yandex.practicum.filmorate.storage.dao.genres.FilmGenresDbStorage;
@@ -31,7 +29,6 @@ import java.util.*;
 @Primary
 public class FilmDbStorage implements FilmStorageInterface {
 
-    private int review_id = 1;
     private final JdbcTemplate jdbcTemplate;
     private final FilmGenresDbStorage genresDbStorage;
     private final String save = "INSERT INTO feeds (user_id, entity_id, event_type, operation, time_stamp) " +
@@ -189,100 +186,5 @@ public class FilmDbStorage implements FilmStorageInterface {
             film.setGenres(new HashSet<>(jdbcTemplate.query(request2, GenresMapper::mapRow, film.getId())));
         }
         return films;
-    }
-
-    public Review postReview(Review review) {
-        review.setReviewId(review_id);
-        review_id++;
-        String request = "INSERT INTO reviews(content, positive, user_id, film_id, useful) " +
-                "values(?, ?, ?, ?, ?)";
-        jdbcTemplate.update(request, review.getContent(), review.getIsPositive(),
-                review.getUserId(), review.getFilmId(), review.getUseful());
-        jdbcTemplate.update(save, review.getUserId(), review.getReviewId(), "REVIEW", "ADD", LocalDateTime.now());
-        System.out.println("Добавление комментария");
-        return review;
-    }
-
-    public Review putReview(Review review) {
-        String request = "UPDATE reviews SET " + "content = ?, positive = ?, user_id = ?, film_id = ?, useful = ? " +
-                "WHERE id = ?";
-        jdbcTemplate.update(request, review.getContent(), review.getIsPositive(), review.getUserId(),
-                review.getFilmId(), review.getUseful(), review.getReviewId());
-        jdbcTemplate.update(save, review.getUserId(), review.getReviewId(), "REVIEW", "UPDATE",
-                LocalDateTime.now());
-        System.out.println("Обновление комментария");
-        return review;
-    }
-
-    public Review getReview(long id) {
-        System.out.println("Получение комментария");
-        try {
-            String request = "SELECT * FROM reviews WHERE id = ?";
-            return jdbcTemplate.queryForObject(request, new ReviewRowMapper(), id);
-        } catch (EmptyResultDataAccessException e) {
-            throw new NotFoundException("Комментарий не найден");
-        }
-    }
-
-    public List<Review> getReviews(long filmId) {
-        System.out.println("Получение комментариев");
-        String request = "SELECT * FROM reviews WHERE film_id = ?";
-        return jdbcTemplate.query(request, new ReviewRowMapper(), filmId);
-    }
-
-    public List<Review> delReview(long id) {
-        Review review = getReview(id);
-        String request = "DELETE FROM reviews WHERE id = ?";
-        String request1 = "SELECT * FROM reviews";
-        jdbcTemplate.update(request, id);
-        jdbcTemplate.update(save, review.getUserId(), review.getReviewId(), "REVIEW", "REMOVE",
-                LocalDateTime.now());
-        return jdbcTemplate.query(request1, new ReviewRowMapper());
-    }
-
-    public Review addReviewLike(long id, long userId) {
-        System.out.println("Добавление лайка");
-        Review review = getReview(id);
-        String check = "DELETE FROM dislike_reviews WHERE user_id = ? AND review_id = ?";
-        int result = jdbcTemplate.update(check, id, userId);
-        if (result == 0) {
-            review.setUseful(review.getUseful() + 1);
-        } else {
-            review.setUseful(review.getUseful() + 2);
-        }
-        putReview(review);
-        String request = "INSERT INTO like_reviews(user_id, review_id) " + "values(?, ?)";
-        jdbcTemplate.update(request, id, userId);
-        return review;
-    }
-
-    public Review delReviewLike(long id, long userId) {
-        System.out.println("Удаление лайка");
-        Review review = getReview(id);
-        String check = "DELETE FROM like_reviews WHERE user_id = ? AND review_id = ?";
-        int result = jdbcTemplate.update(check, id, userId);
-        if (result == 1) {
-            review.setUseful(review.getUseful() - 1);
-        }
-        putReview(review);
-        String request = "DELETE FROM like_reviews WHERE user_id = ? AND review_id = ?";
-        jdbcTemplate.update(request, id, userId);
-        return review;
-    }
-
-    public Review addReviewDislike(long id, long userId) {
-        System.out.println("Добавление дизлайка");
-        Review review = getReview(id);
-        String check = "DELETE FROM like_reviews WHERE user_id = ? AND review_id = ?";
-        int result = jdbcTemplate.update(check, id, userId);
-        if (result == 1) {
-            review.setUseful(review.getUseful() - 2);
-        } else {
-            review.setUseful(review.getUseful() - 1);
-        }
-        putReview(review);
-        String request = "INSERT INTO dislike_reviews(user_id, review_id) " + "values(?, ?)";
-        jdbcTemplate.update(request, id, userId);
-        return review;
     }
 }
