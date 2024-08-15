@@ -9,12 +9,13 @@ import java.sql.SQLException;
 @Component
 public class FeedRowMapper {
     public static Feed mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        Feed feed = new Feed();
-        feed.setUserId(resultSet.getLong("user_id"));
-        feed.setEntityId(resultSet.getLong("entity_id"));
-        feed.setEventType(resultSet.getString("event_type"));
-        feed.setOperation(resultSet.getString("operation"));
-        feed.setTimestamp(resultSet.getTimestamp("time_stamp").toInstant().toEpochMilli());
-        return feed;
+        return Feed.builder()
+                .eventId(resultSet.getLong("event_id"))
+                .userId(resultSet.getLong("user_id"))
+                .entityId(resultSet.getLong("entity_id"))
+                .eventType(resultSet.getString("event_type"))
+                .operation(resultSet.getString("operation"))
+                .timestamp(resultSet.getLong("timestamp"))
+                .build();
     }
 }

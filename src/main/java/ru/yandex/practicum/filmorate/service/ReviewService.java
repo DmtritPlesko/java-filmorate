@@ -15,21 +15,28 @@ public class ReviewService {
     private final UserDbService userService;
     private final FilmDbService filmDbService;
     private final ReviewStorage reviewStorage;
+    private final FeedService feedService;
 
 
     public Review create(Review review) {
         reviewValidation(review);
-        return reviewStorage.create(review);
+        Review reviewCreated = reviewStorage.create(review);
+        feedService.create(reviewCreated.getUserId(), reviewCreated.getReviewId(), "REVIEW", "ADD");
+        return reviewCreated;
     }
 
     public Review update(Review review) {
         reviewValidation(review);
-        return reviewStorage.update(review);
+        Review reviewUpdated = reviewStorage.update(review);
+        feedService.create(reviewUpdated.getUserId(), reviewUpdated.getReviewId(), "REVIEW", "UPDATE");
+        return reviewUpdated;
     }
 
     public void delete(Long reviewId) {
         idValidation(reviewId);
+        Review review = getReviewById(reviewId);
         reviewStorage.delete(reviewId);
+        feedService.create(review.getUserId(), reviewId, "REVIEW", "REMOVE");
     }
 
     public List<Review> getAllReviewsByCount(Integer count) {

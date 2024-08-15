@@ -23,6 +23,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -43,8 +45,6 @@ public class FilmDbStorage implements FilmStorageInterface {
     private final FilmRowMapper filmRowMapper;
     private final NamedParameterJdbcOperations jdbc;
     private final UserDbStorage userDbStorage;
-    private final String save = "INSERT INTO feeds (user_id, entity_id, event_type, operation, time_stamp) " +
-            "values (?, ?, ?, ?, ?)";
 
     @Override
     public Film addNewFilm(Film film) {
@@ -90,7 +90,7 @@ public class FilmDbStorage implements FilmStorageInterface {
                 jdbcTemplate.update(sqlInsertFilmDirectors, film.getId(), director.getId());
             }
         }
-        return film;
+        return getFilmByID(film.getId());
     }
 
     @Override
@@ -179,6 +179,9 @@ public class FilmDbStorage implements FilmStorageInterface {
                 if (rs.getLong("genre_id") != 0) {
                     Genre genre = new Genre(rs.getLong("genre_id"), rs.getString("genre_name"));
                     film.getGenres().add(genre);
+                    film.setGenres(film.getGenres().stream()
+                            .sorted(Comparator.comparing(Genre::getId))
+                            .collect(Collectors.toCollection(LinkedHashSet::new)));
                 }
 
                 if (rs.getLong("director_id") != 0) {
@@ -229,6 +232,9 @@ public class FilmDbStorage implements FilmStorageInterface {
             if (rs.getLong("genre_id") != 0) {
                 Genre genre = new Genre(rs.getLong("genre_id"), rs.getString("genre_name"));
                 film.getGenres().add(genre);
+                film.setGenres(film.getGenres().stream()
+                        .sorted(Comparator.comparing(Genre::getId))
+                        .collect(Collectors.toCollection(LinkedHashSet::new)));
             }
             if (rs.getLong("director_id") != 0) {
                 Director director = new Director(
@@ -260,7 +266,6 @@ public class FilmDbStorage implements FilmStorageInterface {
             PreparedStatement pr = con.prepareStatement(sqlQuery);
             pr.setLong(1, filmId);
             pr.setLong(2, userId);
-            jdbcTemplate.update(save, userId, filmId, "LIKE", "ADD", LocalDateTime.now());
             return pr;
         });
     }
@@ -272,7 +277,6 @@ public class FilmDbStorage implements FilmStorageInterface {
         log.info("Пользователь с id = {} убрал лайк с фильму с id = {}", userId, id);
         final String sqlQuery = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sqlQuery, id, userId);
-        jdbcTemplate.update(save, userId, id, "LIKE", "REMOVE", LocalDateTime.now());
     }
 
     @Override
@@ -293,7 +297,7 @@ public class FilmDbStorage implements FilmStorageInterface {
                 "ORDER BY like_count DESC " +
                 "LIMIT ?";
 
-        String condition = " ";
+        String condition = "";
         List<Object> params = new ArrayList<>();
         if (genreId != null) {
             condition = condition + "WHERE fg.genre_id = ?";
@@ -307,6 +311,7 @@ public class FilmDbStorage implements FilmStorageInterface {
             condition = condition + "WHERE YEAR(f.release_date) = ?";
             params.add(year);
         }
+
         params.add(count);
         String sql = String.format(sqlQuery, condition);
 
@@ -326,6 +331,9 @@ public class FilmDbStorage implements FilmStorageInterface {
             if (rs.getLong("genre_id") != 0) {
                 Genre genre = new Genre(rs.getLong("genre_id"), rs.getString("genre_name"));
                 film.getGenres().add(genre);
+                film.setGenres(film.getGenres().stream()
+                        .sorted(Comparator.comparing(Genre::getId))
+                        .collect(Collectors.toCollection(LinkedHashSet::new)));
             }
             if (rs.getLong("director_id") != 0) {
                 Director director = new Director(
@@ -335,74 +343,66 @@ public class FilmDbStorage implements FilmStorageInterface {
 
             }
         }, params.toArray());
-        List<Film> films = new ArrayList<>(filmMap.values());
-        films.sort((f1, f2) -> Long.compare(f2.getLikes().size(), f1.getLikes().size()));
 
-        return films;
+        return new ArrayList<>
+                (allFilms().stream()
+                        .filter((film -> filmMap.containsKey(film.getId())))
+                        .toList());
     }
 
     @Override
     public List<Film> getFilmBySort(Long id, List<String> sortBy) {
-        System.out.println(allFilms());
-        String select = "SELECT f.*, " +
-                "m.mpa_name, " +
-                "fg.genre_id, g.genre_name, " +
-                "fd.director_id, d.director_name, " +
-                "COUNT(DISTINCT l.user_id) AS like_count " +
-                "FROM films AS f " +
-                "LEFT JOIN film_genres AS fg ON f.film_id = fg.film_id " +
-                "LEFT JOIN genres AS g ON fg.genre_id = g.genre_id " +
-                "LEFT JOIN mpa AS m ON f.mpa_id = m.mpa_id " +
-                "LEFT JOIN film_directors AS fd ON f.film_id = fd.film_id " +
-                "LEFT JOIN directors AS d ON fd.director_id = d.director_id " +
-                "LEFT JOIN likes AS l ON f.film_id = l.film_id " +
-                "WHERE fd.director_id = :director_id " +
-                "GROUP BY f.film_id, fg.genre_id, fd.director_id ";
-        String sql;
-        if (sortBy.equals("year")) {
-            sql = select + "ORDER BY EXTRACT(YEAR FROM CAST(f.release_date AS DATE)); ";
+        String sqlQuery = "SELECT f.*, m.mpa_name, l.user_id, fg.genre_id, g.GENRE_NAME AS genre_name, d.director_id," +
+                "dir.director_name, COUNT(l.user_id) AS like_count " +
+                "FROM films f " +
+                "INNER JOIN mpa m ON f.mpa_id = m.mpa_id " +
+                "LEFT JOIN likes l ON f.film_id = l.film_id " +
+                "LEFT JOIN film_genres fg ON f.film_id = fg.film_id " +
+                "LEFT JOIN genres g ON fg.genre_id = g.genre_id " +
+                "LEFT JOIN film_directors d on f.film_id = d.film_id " +
+                "LEFT JOIN directors dir on dir.director_id = d.director_id " +
+                "WHERE dir.director_id = ? " +
+                "GROUP BY f.film_id, m.mpa_name, l.user_id, fg.genre_id, g.GENRE_NAME, d.director_id, dir.director_name ";
+
+        Map<Long, Film> filmMap = new LinkedHashMap<>();
+
+        jdbcTemplate.query(sqlQuery, rs -> {
+            Long filmId = rs.getLong("film_id");
+            Film film = filmMap.get(filmId);
+            if (film == null) {
+                film = filmRowMapper.mapRow(rs, rs.getRow());
+                filmMap.put(filmId, film);
+            }
+
+            if (rs.getLong("user_id") != 0) {
+                film.getLikes().add(rs.getLong("user_id"));
+            }
+            if (rs.getLong("genre_id") != 0) {
+                Genre genre = new Genre(rs.getLong("genre_id"), rs.getString("genre_name"));
+                film.getGenres().add(genre);
+                film.setGenres(film.getGenres().stream()
+                        .sorted(Comparator.comparing(Genre::getId))
+                        .collect(Collectors.toCollection(LinkedHashSet::new)));
+            }
+            if (rs.getLong("director_id") != 0) {
+                Director director = new Director(
+                        rs.getLong("director_id"),
+                        rs.getString("director_name"));
+                film.getDirectors().add(director);
+
+            }
+        }, id);
+        List<Film> films;
+        if (sortBy.contains("likes")) {
+
+            // Преобразуем в список и сортируем по количеству лайков
+            films = new ArrayList<>(filmMap.values());
+            films.sort(Comparator.comparingLong(f -> f.getLikes().size()));
         } else {
-            sql = select + "ORDER BY like_count DESC; ";
+            films = new ArrayList<>(filmMap.values());
+            films.sort(Comparator.comparingLong(f -> f.getReleaseDate().getYear()));
         }
-        Map<Long, Film> films = jdbc.query(sql, Map.of("director_id", id),
-                rs -> {
-                    Map<Long, Film> films1 = new LinkedHashMap<>();
-                    Set<Genre> genres = new LinkedHashSet<>();
-                    Set<Director> directors= new LinkedHashSet<>();
-                    while (rs.next()) {
-                        if (rs.getLong("genre_id") != 0) {
-                            genres.add(new Genre(rs.getLong("genre_id"),
-                                    rs.getString("genre_name")));
-                        }
-                        if (rs.getLong("director_id") != 0) {
-                            directors.add(new Director(rs.getLong("director_id"),
-                                    rs.getString("director_name")));
-                        }
-                        Long filmId = rs.getLong("film_id");
-                        Film film = new Film();
-                        film.setName(rs.getString("name"));
-                        film.setDescription(rs.getString("description"));
-                        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-                        film.setDuration( rs.getLong("duration"));
-                        film.setId( rs.getLong("film_id"));
-                        film.setMpa(new Mpa(rs.getLong("mpa_id"), rs.getString("mpa_name")));
-                        film.setDirectors(directors);
-                        film.setGenres(genres);
-                        films1.put(filmId, film);
-                    }
-                    return films1;
-                });
-        assert films != null;
-        return films.values().stream().toList();
-
-
-//        if (sortBy.get(0).equals("likes")) {
-//            return sortByLikes(id);
-//        } else if (sortBy.get(0).equals("year")) {
-//            return sortByYears(id);
-//        }
-//        throw new IllegalArgumentException("Неизвестный метод сортировки");
-
+        return films;
     }
 
     private List<Film> sortByYears(Long id) {
@@ -433,6 +433,9 @@ public class FilmDbStorage implements FilmStorageInterface {
             if (rs.getLong("genre_id") != 0) {
                 Genre genre = new Genre(rs.getLong("genre_id"), rs.getString("genre_name"));
                 film.getGenres().add(genre);
+                film.setGenres(film.getGenres().stream()
+                        .sorted(Comparator.comparing(Genre::getId))
+                        .collect(Collectors.toCollection(LinkedHashSet::new)));
             }
             if (rs.getLong("director_id") != 0) {
                 Director director = new Director(
@@ -591,6 +594,9 @@ public class FilmDbStorage implements FilmStorageInterface {
                         if (rs.getLong("genre_id") != 0) {
                             genres.add(new Genre(rs.getLong("genre_id"),
                                     rs.getString("genre_name")));
+                            genres.stream()
+                                    .sorted(Comparator.comparing(Genre::getId))
+                                    .collect(Collectors.toCollection(LinkedHashSet::new));
                         }
                         if (rs.getLong("director_id") != 0) {
                             directors.add(new Director(rs.getLong("director_id"),
@@ -611,7 +617,10 @@ public class FilmDbStorage implements FilmStorageInterface {
                     return films1;
                 });
         assert films != null;
-        return films.values().stream().toList();
+        return new ArrayList<>
+                (allFilms().stream()
+                        .filter((film -> films.containsKey(film.getId())))
+                        .toList());
     }
 
     public void validFilm(long id) {

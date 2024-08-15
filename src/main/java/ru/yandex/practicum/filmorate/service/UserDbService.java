@@ -24,11 +24,13 @@ import java.util.regex.Pattern;
 public class UserDbService {
     private final UserStorageInterface userStorage;
     private final FilmDbService filmDbService;
+    private final FeedService feedService;
 
     @Autowired
-    public UserDbService(UserDbStorage userStorage, FilmDbService filmDbService) {
+    public UserDbService(UserDbStorage userStorage, FilmDbService filmDbService, FeedService feedService) {
         this.userStorage = userStorage;
         this.filmDbService = filmDbService;
+        this.feedService = feedService;
     }
 
     //create
@@ -39,6 +41,7 @@ public class UserDbService {
 
     public void addNewFriend(Long userId, Long friendId) {
         userStorage.addNewFriend(userId, friendId);
+        feedService.create(userId, friendId, "FRIEND", "ADD");
     }
 
     //read
@@ -67,6 +70,7 @@ public class UserDbService {
     //delete
     public void deleteFriendFromUser(Long userId, Long friendId) {
         userStorage.deleteFriend(userId, friendId);
+        feedService.create(userId, friendId, "FRIEND", "REMOVE");
     }
 
     /*

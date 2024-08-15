@@ -33,8 +33,6 @@ import java.util.Set;
 public class UserDbStorage implements UserStorageInterface {
     private final JdbcTemplate jdbcTemplate;
     private final UserRowMapper userRowMapper;
-    private final String save = "INSERT INTO feeds (user_id, entity_id, event_type, operation, time_stamp) " +
-            "values (?, ?, ?, ?, ?)";
 
     @Override
     public User createUser(User user) {
@@ -99,7 +97,6 @@ public class UserDbStorage implements UserStorageInterface {
         log.info("Добавление нового друга");
         jdbcTemplate.update("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)", +
                 userId, friendId, "unconfirmed");
-        jdbcTemplate.update(save, userId, friendId, "FRIEND", "ADD", LocalDateTime.now());
     }
 
     @Override
@@ -115,13 +112,12 @@ public class UserDbStorage implements UserStorageInterface {
     public void deleteFriend(Long userId, Long friendId) {
         validUser(userId);
         validUser(friendId);
-        log.info("удаление пользователя");
+        log.info("удаление друга");
 //        getUserById(userId);
 //        getUserById(friendId);
         log.info("пользователь с id = {} удалил друга с id = {}", userId, friendId);
         final String sqlQuery = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
-        jdbcTemplate.update(save, userId, friendId, "FRIEND", "REMOVE", LocalDateTime.now());
     }
 
     @Override
