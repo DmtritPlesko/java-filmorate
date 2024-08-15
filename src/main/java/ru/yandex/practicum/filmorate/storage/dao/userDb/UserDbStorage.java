@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorageInterface;
 import ru.yandex.practicum.filmorate.mappers.FeedRowMapper;
 import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.storage.dao.filmDb.FilmDbStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -61,6 +62,7 @@ public class UserDbStorage implements UserStorageInterface {
 
     @Override
     public User update(User user) {
+        validUser(user.getId());
         log.info("Обновление пользователя с ID {}", user.getId());
         final String sqlQuery = "UPDATE users SET name = ?, age = ?, email = ?, login = ?," +
                 " password = ?, birthday = ? WHERE user_id = ?";
@@ -90,8 +92,10 @@ public class UserDbStorage implements UserStorageInterface {
 
     @Override
     public void addNewFriend(Long userId, Long friendId) {
-        getUserById(userId);
-        getUserById(friendId);
+        validUser(userId);
+        validUser(friendId);
+//        getUserById(userId);
+//        getUserById(friendId);
         log.info("Добавление нового друга");
         jdbcTemplate.update("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)", +
                 userId, friendId, "unconfirmed");
@@ -100,7 +104,8 @@ public class UserDbStorage implements UserStorageInterface {
 
     @Override
     public void deleteUser(Long id) {
-        getUserById(id);
+        validUser(id);
+//        getUserById(id);
         log.info("Удаление пользователся с id = {}", id);
         String sqlQuery = "DELETE FROM users WHERE user_id = ?;";
         jdbcTemplate.update(sqlQuery, id);
@@ -108,9 +113,11 @@ public class UserDbStorage implements UserStorageInterface {
 
     @Override
     public void deleteFriend(Long userId, Long friendId) {
+        validUser(userId);
+        validUser(friendId);
         log.info("удаление пользователя");
-        getUserById(userId);
-        getUserById(friendId);
+//        getUserById(userId);
+//        getUserById(friendId);
         log.info("пользователь с id = {} удалил друга с id = {}", userId, friendId);
         final String sqlQuery = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
@@ -119,6 +126,7 @@ public class UserDbStorage implements UserStorageInterface {
 
     @Override
     public User getUserById(Long id) {
+        validUser(id);
         String sqlQuery = "SELECT * FROM users WHERE user_id = ?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, new Object[]{id}, userRowMapper);
@@ -129,7 +137,8 @@ public class UserDbStorage implements UserStorageInterface {
 
     @Override
     public Set<User> allFriend(Long userId) {
-        getUserById(userId);
+        validUser(userId);
+//        getUserById(userId);
         log.info("все друзья пользователя с id = {}", userId);
         final String sqlQuery = "SELECT * FROM users u " +
                 "JOIN friends f ON u.user_id = f.friend_id WHERE f.user_id = ?";
@@ -138,8 +147,10 @@ public class UserDbStorage implements UserStorageInterface {
 
     @Override
     public Set<User> getMutualFriends(Long userId, Long friendId) {
-        getUserById(userId);
-        getUserById(friendId);
+        validUser(userId);
+        validUser(friendId);
+//        getUserById(userId);
+//        getUserById(friendId);
         log.info("Поиск общих друзей");
         final String sqlQuery = "SELECT DISTINCT u.* FROM users u JOIN friends f "
                 + "ON u.user_id = f.friend_id WHERE f.user_id = ? AND u.user_id "
@@ -152,7 +163,17 @@ public class UserDbStorage implements UserStorageInterface {
 
     //добавление событий
     public List<Feed> getFeed(Long userId) {
+        validUser(userId);
         String request = "SELECT * FROM feeds WHERE user_id = ?";
         return jdbcTemplate.query(request, FeedRowMapper::mapRow, userId);
+    }
+
+    public void validUser(long id) {
+        List<Long> ids = jdbcTemplate
+                .query("SELECT user_id FROM users; ", (rs, rowNum) -> rs.getLong("user_id"));
+        if (!ids.contains(id)) {
+            log.error("Пользователя с id = {} нет.", id);
+            throw new NotFoundException("Пользователя с id = {} нет." + id);
+        }
     }
 }

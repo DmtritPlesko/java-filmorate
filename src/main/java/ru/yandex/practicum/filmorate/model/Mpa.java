@@ -5,15 +5,15 @@ import lombok.Data;
 @Data
 public class Mpa {
 
-    private int id;
+    private Long id;
 
     private String name;
 
-    public Mpa(int id) {
+    public Mpa(Long id) {
         this.id = id;
     }
 
-    public Mpa(int id, String ratingName) {
+    public Mpa(Long id, String ratingName) {
         this.id = id;
         this.name = ratingName;
     }

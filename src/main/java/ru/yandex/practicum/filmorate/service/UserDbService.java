@@ -134,6 +134,8 @@ public class UserDbService {
             throw new ValidationException("Логин не может быть пустым или содержать пробелы");
         } else if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем.");
+        } else if (user.getName().isEmpty()) {
+            user.setName(user.getLogin());
         }
     }
 

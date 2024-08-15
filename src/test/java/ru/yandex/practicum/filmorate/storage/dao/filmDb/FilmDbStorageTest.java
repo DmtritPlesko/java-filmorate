@@ -49,7 +49,7 @@ public class FilmDbStorageTest {
 
         Film film = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 1L, 150L,
                 new HashSet<>(likkes),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         long id = filmDbStorage.addNewFilm(film).getId();
 
@@ -72,7 +72,7 @@ public class FilmDbStorageTest {
 
         Film film = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 1L, 150L,
                 new HashSet<>(likkes),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         filmDbStorage.addNewFilm(film);
         film.setName("NEW COLLER");
@@ -96,7 +96,7 @@ public class FilmDbStorageTest {
 
         Film film = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 1L, 150L,
                 new HashSet<>(likkes),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         Film film1 = filmDbStorage.addNewFilm(film);
 
@@ -126,16 +126,16 @@ public class FilmDbStorageTest {
 
         final Film firstFilmForTest = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 1L, 150L,
                 new HashSet<>(likes2),
-                new HashSet<>(genres), new HashSet<>(directors), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(directors), new Mpa(1L));
 
 
         final Film secondFilmForTest = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 2L, 150L,
                 new HashSet<>(likes2),
-                new HashSet<>(genres), new HashSet<>(directors), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(directors), new Mpa(1L));
 
         final Film thirdFilmForTest = new Film("Cooler", "THIS IS CooLeer", LocalDate.now(), 3L, 150L,
                 new HashSet<>(likes1),
-                new HashSet<>(genres), new HashSet<>(directors), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(directors), new Mpa(1L));
 
         filmDbStorage.addNewFilm(firstFilmForTest);
         filmDbStorage.addNewFilm(secondFilmForTest);

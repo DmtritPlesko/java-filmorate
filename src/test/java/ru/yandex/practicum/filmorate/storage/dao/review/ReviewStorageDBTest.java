@@ -69,7 +69,7 @@ class ReviewStorageDBTest {
         film.setDuration(150L);
         film.setLikes(likes);
         film.setGenres(genres);
-        film.setMpa(new Mpa(1));
+        film.setMpa(new Mpa(1L));
         return filmStorage.addNewFilm(film);
     }
 

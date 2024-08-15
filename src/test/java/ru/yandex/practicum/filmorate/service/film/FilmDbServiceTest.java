@@ -53,23 +53,23 @@ public class FilmDbServiceTest {
 
         Film film1 = new Film("филосовский камень", "description",
                 LocalDate.now(), 11L, 150L, new HashSet<>(likes),
-                new HashSet<>(genres), directors, new Mpa(1));
+                new HashSet<>(genres), directors, new Mpa(1L));
 
         Film film2 = new Film("тайная комната", "description",
                 LocalDate.now(), 12L, 150L, new HashSet<>(likes),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         Film film3 = new Film("узник азкабана", "description",
                 LocalDate.now(), 13L, 150L, new HashSet<>(likes),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         Film film4 = new Film("кубок огня", "description",
                 LocalDate.now(), 14L, 150L, new HashSet<>(likes),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         Film film5 = new Film("орден феникса", "description",
                 LocalDate.now(), 15L, 150L, new HashSet<>(likes),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         filmDbStorage.addNewFilm(film1);
         filmDbStorage.addNewFilm(film2);

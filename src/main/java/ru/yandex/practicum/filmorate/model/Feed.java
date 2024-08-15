@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class Feed {
-    private long userId;
-    private long entityId;
+    private Long userId;
+    private Long entityId;
     private String eventType;
     private String operation;
-    private long timestamp;
+    private Long timestamp;
 }

@@ -7,7 +7,7 @@ import lombok.experimental.FieldDefaults;
 @Data
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class FilmGenres {
-    long filmId;
+    Long filmId;
 
-    long genreId;
+    Long genreId;
 }

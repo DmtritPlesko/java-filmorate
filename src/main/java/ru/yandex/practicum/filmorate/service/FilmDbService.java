@@ -69,25 +69,26 @@ public class FilmDbService {
             log.error("Параметры запроса переданы неверно");
             throw new NotFoundException("Параметры запроса переданы неверно");
         }
+        return filmStorage.search(query, by);
 
-        List<Film> filteredFilms;
-        if (by.equals("director")) {
-            log.info("Поиск фильма по режиссёру");
-            filteredFilms = filmStorage.allFilms()
-                    .stream().filter(film -> film.getDirectors().stream()
-                    .anyMatch(director -> director.getName().contains(query))).toList();
-        } else if (by.equals("title")) {
-            log.info("Поиск фильма по названию");
-            filteredFilms = filmStorage.allFilms().stream()
-                    .filter(film -> film.getName().contains(query)).toList();
-        } else {
-            log.info("Поиск фильма по названию и по режиссёру");
-            filteredFilms = filmStorage.allFilms()
-                    .stream().filter(film -> film.getName().contains(query) ||
-                            film.getDirectors().stream()
-                                    .anyMatch(director -> director.getName().contains(query))).toList();
-        }
-        return filteredFilms;
+//        List<Film> filteredFilms;
+//        if (by.equals("director")) {
+//            log.info("Поиск фильма по режиссёру");
+//            filteredFilms = filmStorage.allFilms()
+//                    .stream().filter(film -> film.getDirectors().stream()
+//                    .anyMatch(director -> director.getName().contains(query))).toList();
+//        } else if (by.equals("title")) {
+//            log.info("Поиск фильма по названию");
+//            filteredFilms = filmStorage.allFilms().stream()
+//                    .filter(film -> film.getName().contains(query)).toList();
+//        } else {
+//            log.info("Поиск фильма по названию и по режиссёру");
+//            filteredFilms = filmStorage.allFilms()
+//                    .stream().filter(film -> film.getName().contains(query) ||
+//                            film.getDirectors().stream()
+//                                    .anyMatch(director -> director.getName().contains(query))).toList();
+//        }
+//        return filteredFilms;
     }
 
 

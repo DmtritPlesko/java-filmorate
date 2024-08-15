@@ -63,7 +63,7 @@ public class UserServiceTest {
 
         Film filmTwoLikes = new Film("Two likes", "Two likes", LocalDate.now(), 1L, 150L,
                 new HashSet<>(),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         long idTwoLikes = filmDbStorage.addNewFilm(filmTwoLikes).getId();
         filmTwoLikes.setId(idTwoLikes);
@@ -72,7 +72,7 @@ public class UserServiceTest {
 
         Film filmOneLike = new Film("One like", "One like", LocalDate.now(), 1L, 150L,
                 new HashSet<>(),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         long idOneLike = filmDbStorage.addNewFilm(filmOneLike).getId();
         filmOneLike.setId(idOneLike);
@@ -116,7 +116,7 @@ public class UserServiceTest {
 
         Film filmTwoLikes = new Film("Two likes", "Two likes", LocalDate.now(), 1L, 150L,
                 new HashSet<>(),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         long idTwoLikes = filmDbStorage.addNewFilm(filmTwoLikes).getId();
         filmTwoLikes.setId(idTwoLikes);
@@ -124,7 +124,7 @@ public class UserServiceTest {
 
         Film filmOneLike = new Film("One like", "One like", LocalDate.now(), 1L, 150L,
                 new HashSet<>(),
-                new HashSet<>(genres), new HashSet<>(), new Mpa(1));
+                new HashSet<>(genres), new HashSet<>(), new Mpa(1L));
 
         long idOneLike = filmDbStorage.addNewFilm(filmOneLike).getId();
         filmOneLike.setId(idOneLike);

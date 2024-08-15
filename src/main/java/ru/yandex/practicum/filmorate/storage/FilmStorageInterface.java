@@ -25,4 +25,8 @@ public interface FilmStorageInterface {
     List<Film> getFilmBySort(Long id, List<String> sortBy);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
+
+    void validFilm(long id);
+
+    List<Film> search(String query, String by);
 }

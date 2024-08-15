@@ -28,4 +28,5 @@ public interface UserStorageInterface {
 
     List<Feed> getFeed(Long userId);
 
+    void validUser(long id);
 }
