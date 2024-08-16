@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.dao.filmDb;
 
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -25,4 +25,6 @@ public interface FilmStorageInterface {
     List<Film> getFilmBySort(Long id, List<String> sortBy);
 
     List<Film> getCommonFilms(Long userId, Long friendId);
+
+    void validFilm(long id);
 }

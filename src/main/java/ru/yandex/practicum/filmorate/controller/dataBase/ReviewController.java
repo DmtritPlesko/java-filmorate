@@ -72,5 +72,4 @@ public class ReviewController {
                               @PathVariable("userId") Long userId) {
         service.deleteDislike(reviewId, userId);
     }
-
 }

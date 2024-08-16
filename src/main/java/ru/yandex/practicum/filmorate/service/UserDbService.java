@@ -8,7 +8,7 @@ import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorageInterface;
+import ru.yandex.practicum.filmorate.storage.dao.userDb.UserStorageInterface;
 import ru.yandex.practicum.filmorate.storage.dao.userDb.UserDbStorage;
 
 import java.time.LocalDate;
@@ -24,14 +24,15 @@ import java.util.regex.Pattern;
 public class UserDbService {
     private final UserStorageInterface userStorage;
     private final FilmDbService filmDbService;
+    private final FeedService feedService;
 
     @Autowired
-    public UserDbService(UserDbStorage userStorage, FilmDbService filmDbService) {
+    public UserDbService(UserDbStorage userStorage, FilmDbService filmDbService, FeedService feedService) {
         this.userStorage = userStorage;
         this.filmDbService = filmDbService;
+        this.feedService = feedService;
     }
 
-    //create
     public User addUser(User user) {
         validation(user);
         return userStorage.createUser(user);
@@ -39,9 +40,9 @@ public class UserDbService {
 
     public void addNewFriend(Long userId, Long friendId) {
         userStorage.addNewFriend(userId, friendId);
+        feedService.create(userId, friendId, "FRIEND", "ADD");
     }
 
-    //read
     public User getUserById(Long id) {
         return userStorage.getUserById(id);
     }
@@ -58,15 +59,14 @@ public class UserDbService {
         return userStorage.getMutualFriends(userId, friendId);
     }
 
-    //update
     public User updateUser(User user) {
         validation(user);
         return userStorage.update(user);
     }
 
-    //delete
     public void deleteFriendFromUser(Long userId, Long friendId) {
         userStorage.deleteFriend(userId, friendId);
+        feedService.create(userId, friendId, "FRIEND", "REMOVE");
     }
 
     /*
@@ -75,8 +75,10 @@ public class UserDbService {
      */
     public Collection<Film> getRecommendations(Long userId) {
         log.info("Получить список рекомендаций для пользователя с id = {}", userId);
+
         Collection<User> users = new HashSet<>(getAllUser());
         users.remove(getUserById(userId));
+
         Collection<Film> currentUserFilms = getUsersFavouritesFilms(userId);
         long maxSimilar = 0;
         long maxNotSimilar = 0;
@@ -100,6 +102,7 @@ public class UserDbService {
         if (maxSimilarUserId == -1) {
             return new ArrayList<>();
         }
+
         Collection<Film> recommendedFilms = getUsersFavouritesFilms(maxSimilarUserId);
         recommendedFilms.removeAll(currentUserFilms);
         return recommendedFilms;
@@ -134,6 +137,8 @@ public class UserDbService {
             throw new ValidationException("Логин не может быть пустым или содержать пробелы");
         } else if (user.getBirthday().isAfter(LocalDate.now())) {
             throw new ValidationException("Дата рождения не может быть в будущем.");
+        } else if (user.getName().isEmpty()) {
+            user.setName(user.getLogin());
         }
     }
 

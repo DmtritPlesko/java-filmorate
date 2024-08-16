@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller.dataBase;
 
+import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -81,8 +82,9 @@ public class UserDbController {
         return userDbService.getRecommendations(userId);
     }
 
-    @GetMapping("{userId}/feed")
-    public List<Feed> getFeed(@PathVariable("userId") Long userId) {
-        return userDbService.getFeed(userId);
+    @GetMapping("{id}/feed")
+    public List<Feed> getFeed(@PathVariable @Positive Long id) {
+        userDbService.getUserById(id);
+        return userDbService.getFeed(id);
     }
 }

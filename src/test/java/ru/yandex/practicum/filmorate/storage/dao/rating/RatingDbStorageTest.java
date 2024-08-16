@@ -23,7 +23,7 @@ class RatingDbStorageTest {
     public void getRatingById() {
         Mpa mpa = ratingDbStorage.getRatingById(1L);
 
-        assertThat(mpa).hasFieldOrPropertyWithValue("id", 1);
+        assertThat(mpa).hasFieldOrPropertyWithValue("id", 1L);
 
     }
 

@@ -36,6 +36,7 @@ public class StatusStorageDb implements StatusDb {
     @Override
     public List<Status> getAllStatus() {
         log.info("Пытаемся взять все статусы которые есть в базе");
+
         final String sqlQuery = "SELECT * FROM rating";
         return new ArrayList<>(jdbcTemplate.query(sqlQuery, statusMapper));
     }

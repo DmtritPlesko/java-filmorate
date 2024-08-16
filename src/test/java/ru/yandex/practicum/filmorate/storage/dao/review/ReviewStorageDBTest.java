@@ -11,8 +11,8 @@ import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorageInterface;
-import ru.yandex.practicum.filmorate.storage.UserStorageInterface;
+import ru.yandex.practicum.filmorate.storage.dao.filmDb.FilmStorageInterface;
+import ru.yandex.practicum.filmorate.storage.dao.userDb.UserStorageInterface;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -69,7 +69,7 @@ class ReviewStorageDBTest {
         film.setDuration(150L);
         film.setLikes(likes);
         film.setGenres(genres);
-        film.setMpa(new Mpa(1));
+        film.setMpa(new Mpa(1L));
         return filmStorage.addNewFilm(film);
     }
 

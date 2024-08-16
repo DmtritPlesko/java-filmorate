@@ -13,21 +13,32 @@ public class ReviewService {
     private final UserDbService userService;
     private final FilmDbService filmDbService;
     private final ReviewStorage reviewStorage;
-
+    private final FeedService feedService;
 
     public Review create(Review review) {
         reviewValidation(review);
-        return reviewStorage.create(review);
+
+        final Review reviewCreated = reviewStorage.create(review);
+        feedService.create(reviewCreated.getUserId(), reviewCreated.getReviewId(),
+                "REVIEW", "ADD");
+        return reviewCreated;
     }
 
     public Review update(Review review) {
         reviewValidation(review);
-        return reviewStorage.update(review);
+
+        final Review reviewUpdated = reviewStorage.update(review);
+        feedService.create(reviewUpdated.getUserId(), reviewUpdated.getReviewId(),
+                "REVIEW", "UPDATE");
+        return reviewUpdated;
     }
 
     public void delete(Long reviewId) {
         idValidation(reviewId);
+
+        final Review review = getReviewById(reviewId);
         reviewStorage.delete(reviewId);
+        feedService.create(review.getUserId(), reviewId, "REVIEW", "REMOVE");
     }
 
     public List<Review> getAllReviewsByCount(Integer count) {
@@ -36,6 +47,7 @@ public class ReviewService {
 
     public Review getReviewById(Long reviewId) {
         idValidation(reviewId);
+
         return reviewStorage.getReviewById(reviewId);
     }
 
@@ -51,6 +63,7 @@ public class ReviewService {
     public void addLike(Long reviewId, Long userId) {
         idValidation(reviewId);
         idValidation(userId);
+
         userService.getUserById(userId);
         reviewStorage.addReaction(reviewId, userId, Boolean.TRUE);
     }
@@ -58,6 +71,7 @@ public class ReviewService {
     public void addDislike(Long reviewId, Long userId) {
         idValidation(reviewId);
         idValidation(userId);
+
         userService.getUserById(userId);
         reviewStorage.addReaction(reviewId, userId, Boolean.FALSE);
     }
@@ -65,6 +79,7 @@ public class ReviewService {
     public void deleteLike(Long reviewId, Long userId) {
         idValidation(reviewId);
         idValidation(userId);
+
         userService.getUserById(userId);
         reviewStorage.deleteReaction(reviewId, userId);
     }
@@ -72,6 +87,7 @@ public class ReviewService {
     public void deleteDislike(Long reviewId, Long userId) {
         idValidation(reviewId);
         idValidation(userId);
+
         userService.getUserById(userId);
         reviewStorage.deleteReaction(reviewId, userId);
     }
