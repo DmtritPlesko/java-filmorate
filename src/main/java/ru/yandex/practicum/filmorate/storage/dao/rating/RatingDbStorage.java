@@ -38,5 +38,4 @@ public class RatingDbStorage implements RatingDb {
         final String sqlQuery = "SELECT * FROM mpa";
         return jdbcTemplate.query(sqlQuery, ratingMapper);
     }
-
 }

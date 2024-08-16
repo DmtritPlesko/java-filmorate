@@ -139,5 +139,4 @@ public class ReviewStorageDB implements ReviewStorage {
         final String sqlQuery = "UPDATE reviews SET useful = ? WHERE review_id = ?";
         jdbcTemplate.update(sqlQuery, usefulRating, reviewId);
     }
-
 }

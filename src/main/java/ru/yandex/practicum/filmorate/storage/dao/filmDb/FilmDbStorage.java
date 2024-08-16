@@ -318,8 +318,7 @@ public class FilmDbStorage implements FilmStorageInterface {
             }
         }, params.toArray());
 
-        return new ArrayList<>
-                (allFilms().stream()
+        return new ArrayList<>(allFilms().stream()
                         .filter((film -> filmMap.containsKey(film.getId())))
                         .toList());
     }
@@ -380,7 +379,7 @@ public class FilmDbStorage implements FilmStorageInterface {
 
     @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
-        final String sql =  "SELECT f.*, m.mpa_name, " +
+        final String sql = "SELECT f.*, m.mpa_name, " +
                 "fg.genre_id, g.genre_name, " +
                 "fd.director_id, d.director_name, " +
                 "COUNT( l.user_id) AS like_count " +
@@ -403,7 +402,7 @@ public class FilmDbStorage implements FilmStorageInterface {
                 rs -> {
                     Map<Long, Film> films1 = new LinkedHashMap<>();
                     Set<Genre> genres = new LinkedHashSet<>();
-                    Set<Director> directors= new LinkedHashSet<>();
+                    Set<Director> directors = new LinkedHashSet<>();
                     while (rs.next()) {
                             if (rs.getLong("genre_id") != 0) {
                                 genres.add(new Genre(rs.getLong("genre_id"),
@@ -418,9 +417,10 @@ public class FilmDbStorage implements FilmStorageInterface {
                                 film.setName(rs.getString("name"));
                                 film.setDescription(rs.getString("description"));
                                 film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-                                film.setDuration( rs.getLong("duration"));
-                                film.setId( rs.getLong("film_id"));
-                                film.setMpa(new Mpa(rs.getLong("mpa_id"), rs.getString("mpa_name")));
+                                film.setDuration(rs.getLong("duration"));
+                                film.setId(rs.getLong("film_id"));
+                                film.setMpa(new Mpa(rs.getLong("mpa_id"),
+                                        rs.getString("mpa_name")));
                                 film.setDirectors(directors);
                                 film.setGenres(genres);
                                 films1.put(filmId, film);
