@@ -21,13 +21,13 @@ import ru.yandex.practicum.filmorate.storage.dao.userDb.UserDbStorage;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -319,8 +319,8 @@ public class FilmDbStorage implements FilmStorageInterface {
         }, params.toArray());
 
         return new ArrayList<>(allFilms().stream()
-                        .filter((film -> filmMap.containsKey(film.getId())))
-                        .toList());
+                .filter((film -> filmMap.containsKey(film.getId())))
+                .toList());
     }
 
     @Override
@@ -404,27 +404,27 @@ public class FilmDbStorage implements FilmStorageInterface {
                     Set<Genre> genres = new LinkedHashSet<>();
                     Set<Director> directors = new LinkedHashSet<>();
                     while (rs.next()) {
-                            if (rs.getLong("genre_id") != 0) {
-                                genres.add(new Genre(rs.getLong("genre_id"),
-                                                rs.getString("genre_name")));
-                            }
-                            if (rs.getLong("director_id") != 0) {
-                                directors.add(new Director(rs.getLong("director_id"),
-                                                rs.getString("director_name")));
-                            }
-                                Long filmId = rs.getLong("film_id");
-                                Film film = new Film();
-                                film.setName(rs.getString("name"));
-                                film.setDescription(rs.getString("description"));
-                                film.setReleaseDate(rs.getDate("release_date").toLocalDate());
-                                film.setDuration(rs.getLong("duration"));
-                                film.setId(rs.getLong("film_id"));
-                                film.setMpa(new Mpa(rs.getLong("mpa_id"),
-                                        rs.getString("mpa_name")));
-                                film.setDirectors(directors);
-                                film.setGenres(genres);
-                                films1.put(filmId, film);
+                        if (rs.getLong("genre_id") != 0) {
+                            genres.add(new Genre(rs.getLong("genre_id"),
+                                    rs.getString("genre_name")));
                         }
+                        if (rs.getLong("director_id") != 0) {
+                            directors.add(new Director(rs.getLong("director_id"),
+                                    rs.getString("director_name")));
+                        }
+                        Long filmId = rs.getLong("film_id");
+                        Film film = new Film();
+                        film.setName(rs.getString("name"));
+                        film.setDescription(rs.getString("description"));
+                        film.setReleaseDate(rs.getDate("release_date").toLocalDate());
+                        film.setDuration(rs.getLong("duration"));
+                        film.setId(rs.getLong("film_id"));
+                        film.setMpa(new Mpa(rs.getLong("mpa_id"),
+                                rs.getString("mpa_name")));
+                        film.setDirectors(directors);
+                        film.setGenres(genres);
+                        films1.put(filmId, film);
+                    }
                     return films1;
                 });
         assert films != null;

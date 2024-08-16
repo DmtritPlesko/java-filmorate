@@ -8,8 +8,8 @@ import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.dao.userDb.UserStorageInterface;
 import ru.yandex.practicum.filmorate.storage.dao.userDb.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.dao.userDb.UserStorageInterface;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -127,7 +127,7 @@ public class UserDbService {
     }
 
     private void validation(User user) {
-        if (StringUtils.isBlank(user.getEmail())) {
+        if (StringUtils.isBlank(user.getEmail()) || user.getEmail() == null) {
             throw new ValidationException("Электронная почта не может быть пустой");
         } else if (!Pattern.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$", user.getEmail())) {
             throw new ValidationException("Неверный формат почты");
