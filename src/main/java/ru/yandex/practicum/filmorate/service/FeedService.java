@@ -13,11 +13,11 @@ import java.util.List;
 public class FeedService {
     private final FeedStorage feedStorage;
 
-    public void create(Long user_id, Long entity_id, String event_type, String operation) {
+    public void create(Long userId, Long entityId, String eventType, String operation) {
         Feed feed = Feed.builder()
-                .userId(user_id)
-                .entityId(entity_id)
-                .eventType(event_type)
+                .userId(userId)
+                .entityId(entityId)
+                .eventType(eventType)
                 .operation(operation)
                 .timestamp(Instant.now().toEpochMilli())
                 .build();
