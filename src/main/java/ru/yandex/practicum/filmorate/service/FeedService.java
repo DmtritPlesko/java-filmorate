@@ -27,5 +27,4 @@ public class FeedService {
     public List<Feed> getFeed(Long userId) {
         return feedStorage.get(userId);
     }
-
 }

@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.dao.userDb;
 
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
@@ -16,7 +16,7 @@ public interface UserStorageInterface {
 
     void addNewFriend(Long userId, Long friendId);
 
-    public void deleteUser(Long id);
+    void deleteUser(Long id);
 
     void deleteFriend(Long userId, Long friendId);
 

@@ -12,15 +12,12 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorageInterface;
 import ru.yandex.practicum.filmorate.mappers.FeedRowMapper;
 import ru.yandex.practicum.filmorate.model.Feed;
-import ru.yandex.practicum.filmorate.storage.dao.filmDb.FilmDbStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +34,8 @@ public class UserDbStorage implements UserStorageInterface {
     @Override
     public User createUser(User user) {
         log.info("Добавление нового пользователя в бд");
-        String sqlQuery = "INSERT INTO users (login,name,age,email,password,birthday) " +
+
+        final String sqlQuery = "INSERT INTO users (login,name,age,email,password,birthday) " +
                 "VALUES (?,?,?,?,?,?);";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -62,6 +60,7 @@ public class UserDbStorage implements UserStorageInterface {
     public User update(User user) {
         validUser(user.getId());
         log.info("Обновление пользователя с ID {}", user.getId());
+
         final String sqlQuery = "UPDATE users SET name = ?, age = ?, email = ?, login = ?," +
                 " password = ?, birthday = ? WHERE user_id = ?";
 
@@ -84,7 +83,8 @@ public class UserDbStorage implements UserStorageInterface {
     @Override
     public List<User> allUser() {
         log.info("Берём всех пользователей");
-        String sqlQuery = "SELECT * FROM users;";
+
+        final String sqlQuery = "SELECT * FROM users;";
         return jdbcTemplate.query(sqlQuery, userRowMapper);
     }
 
@@ -92,9 +92,8 @@ public class UserDbStorage implements UserStorageInterface {
     public void addNewFriend(Long userId, Long friendId) {
         validUser(userId);
         validUser(friendId);
-//        getUserById(userId);
-//        getUserById(friendId);
         log.info("Добавление нового друга");
+
         jdbcTemplate.update("INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, ?)", +
                 userId, friendId, "unconfirmed");
     }
@@ -102,9 +101,9 @@ public class UserDbStorage implements UserStorageInterface {
     @Override
     public void deleteUser(Long id) {
         validUser(id);
-//        getUserById(id);
         log.info("Удаление пользователся с id = {}", id);
-        String sqlQuery = "DELETE FROM users WHERE user_id = ?;";
+
+        final String sqlQuery = "DELETE FROM users WHERE user_id = ?;";
         jdbcTemplate.update(sqlQuery, id);
     }
 
@@ -113,17 +112,18 @@ public class UserDbStorage implements UserStorageInterface {
         validUser(userId);
         validUser(friendId);
         log.info("удаление друга");
-//        getUserById(userId);
-//        getUserById(friendId);
-        log.info("пользователь с id = {} удалил друга с id = {}", userId, friendId);
+
         final String sqlQuery = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sqlQuery, userId, friendId);
+        log.info("пользователь с id = {} удалил друга с id = {}", userId, friendId);
     }
 
     @Override
     public User getUserById(Long id) {
         validUser(id);
-        String sqlQuery = "SELECT * FROM users WHERE user_id = ?";
+        log.info("Запрос на получение пользователя с id = {}", id);
+
+        final String sqlQuery = "SELECT * FROM users WHERE user_id = ?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, new Object[]{id}, userRowMapper);
         } catch (IncorrectResultSizeDataAccessException e) {
@@ -134,8 +134,8 @@ public class UserDbStorage implements UserStorageInterface {
     @Override
     public Set<User> allFriend(Long userId) {
         validUser(userId);
-//        getUserById(userId);
         log.info("все друзья пользователя с id = {}", userId);
+
         final String sqlQuery = "SELECT * FROM users u " +
                 "JOIN friends f ON u.user_id = f.friend_id WHERE f.user_id = ?";
         return new HashSet<>(jdbcTemplate.query(sqlQuery, userRowMapper, userId));
@@ -145,9 +145,8 @@ public class UserDbStorage implements UserStorageInterface {
     public Set<User> getMutualFriends(Long userId, Long friendId) {
         validUser(userId);
         validUser(friendId);
-//        getUserById(userId);
-//        getUserById(friendId);
         log.info("Поиск общих друзей");
+
         final String sqlQuery = "SELECT DISTINCT u.* FROM users u JOIN friends f "
                 + "ON u.user_id = f.friend_id WHERE f.user_id = ? AND u.user_id "
                 + "IN (SELECT f.friend_id FROM friends f WHERE f.user_id = ?)";
@@ -157,15 +156,16 @@ public class UserDbStorage implements UserStorageInterface {
                 friendId));
     }
 
-    //добавление событий
     public List<Feed> getFeed(Long userId) {
         validUser(userId);
-        String request = "SELECT * FROM feeds WHERE user_id = ?";
+        log.info("Запрос на получение ленты событий пользователя с id = {}", userId);
+
+        final String request = "SELECT * FROM feeds WHERE user_id = ?";
         return jdbcTemplate.query(request, FeedRowMapper::mapRow, userId);
     }
 
     public void validUser(long id) {
-        List<Long> ids = jdbcTemplate
+        final List<Long> ids = jdbcTemplate
                 .query("SELECT user_id FROM users; ", (rs, rowNum) -> rs.getLong("user_id"));
         if (!ids.contains(id)) {
             log.error("Пользователя с id = {} нет.", id);

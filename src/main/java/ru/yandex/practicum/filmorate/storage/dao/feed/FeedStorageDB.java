@@ -9,12 +9,10 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.mappers.FeedRowMapper;
-import ru.yandex.practicum.filmorate.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Feed;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -26,7 +24,7 @@ public class FeedStorageDB implements FeedStorage {
     @Override
     public void create(Feed feed) {
         log.info("Добавление нового события {}", feed);
-        String sqlQuery = "INSERT INTO feeds (user_id, entity_id, event_type, operation, timestamp) " +
+        final String sqlQuery = "INSERT INTO feeds (user_id, entity_id, event_type, operation, timestamp) " +
                 "VALUES (?, ?, ?, ?, ?);";
         try {
             KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -41,6 +39,7 @@ public class FeedStorageDB implements FeedStorage {
             }, keyHolder);
 
             Number generatedKey = keyHolder.getKey();
+            assert generatedKey != null;
             feed.setEventId(generatedKey.longValue());
         } catch (DataAccessException e) {
             log.error("Ошибка при добавлении события: ", e);

@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,9 +34,4 @@ public class User {
     String password;
 
     LocalDate birthday;
-
-//    Set<Long> friends;
-
-//    Status friend;
-
 }

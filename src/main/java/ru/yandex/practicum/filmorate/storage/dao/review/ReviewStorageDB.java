@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -28,7 +27,7 @@ public class ReviewStorageDB implements ReviewStorage {
 
         review.setUseful(0L);
 
-        String sqlQuery = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) " +
+        final String sqlQuery = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) " +
                 "VALUES (?, ?, ?, ?, ?);";
         try {
             KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -66,7 +65,6 @@ public class ReviewStorageDB implements ReviewStorage {
 
     @Override
     public void delete(Long reviewId) {
-        Review review = getReviewById(reviewId);
         log.info("Удаление отзыва с id: {}", reviewId);
         getReviewById(reviewId);
 
@@ -84,7 +82,8 @@ public class ReviewStorageDB implements ReviewStorage {
     @Override
     public Review getReviewById(Long reviewId) {
         log.info("Поиск отзыва с id: {}", reviewId);
-        String sqlQuery = "SELECT * FROM reviews WHERE review_id = ?";
+
+        final String sqlQuery = "SELECT * FROM reviews WHERE review_id = ?";
         try {
             return jdbcTemplate.queryForObject(sqlQuery, new Object[]{reviewId}, new ReviewMapper());
         } catch (DataAccessException e) {
@@ -95,7 +94,8 @@ public class ReviewStorageDB implements ReviewStorage {
     @Override
     public List<Review> getReviewsByFilmId(Long filmId, Integer count) {
         log.info("Получение {} отзывов, отсортированных по рейтингу полезности у фильма с id: {}", count, filmId);
-        String sqlQuery = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
+
+        final String sqlQuery = "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
         try {
             return jdbcTemplate.query(sqlQuery, new Object[]{filmId, count}, new ReviewMapper());
         } catch (DataAccessException e) {
@@ -108,7 +108,7 @@ public class ReviewStorageDB implements ReviewStorage {
         log.info("Юзер с id: {} добавляет реакцию отзыву с id: {}", userId, reviewId);
         getReviewById(reviewId);
 
-        String sqlQuery = "MERGE INTO review_likes (review_id, user_id, is_useful) VALUES (?, ?, ?)";
+        final String sqlQuery = "MERGE INTO review_likes (review_id, user_id, is_useful) VALUES (?, ?, ?)";
         jdbcTemplate.update(sqlQuery, reviewId, userId, isUseful);
         updateReviewUsefulRating(reviewId);
     }
@@ -119,13 +119,13 @@ public class ReviewStorageDB implements ReviewStorage {
         log.info("Юзер с id: {} убирает реакцию отзыву с id: {}", userId, reviewId);
         getReviewById(reviewId);
 
-        String sqlQuery = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
+        final String sqlQuery = "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
         jdbcTemplate.update(sqlQuery, reviewId, userId);
         updateReviewUsefulRating(reviewId);
     }
 
     private long getReviewUseful(Long reviewId) {
-        String sqlQuery = "SELECT SUM(" +
+        final String sqlQuery = "SELECT SUM(" +
                 "CASE WHEN is_useful = true THEN 1 ELSE -1 END) AS useful FROM review_likes " +
                 "WHERE review_id = ?";
         Long result = jdbcTemplate.queryForObject(sqlQuery, new Object[]{reviewId}, Long.class);
@@ -134,9 +134,9 @@ public class ReviewStorageDB implements ReviewStorage {
     }
 
     private void updateReviewUsefulRating(Long reviewId) {
-        long usefulRating = getReviewUseful(reviewId);
+        Long usefulRating = getReviewUseful(reviewId);
 
-        String sqlQuery = "UPDATE reviews SET useful = ? WHERE review_id = ?";
+        final String sqlQuery = "UPDATE reviews SET useful = ? WHERE review_id = ?";
         jdbcTemplate.update(sqlQuery, usefulRating, reviewId);
     }
 

@@ -20,10 +20,5 @@ public interface ReviewStorage {
 
     void addReaction(Long reviewId, Long userId, Boolean isUseful);
 
-    //void addDislike(Long reviewId, Long userId, Boolean isUseful);
-
     void deleteReaction(Long reviewId, Long userId);
-
-    //void deleteDislike(Long reviewId, Long userId);
-
 }

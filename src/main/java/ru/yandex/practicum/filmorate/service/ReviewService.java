@@ -3,9 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.dao.filmDb.FilmDbStorage;
 import ru.yandex.practicum.filmorate.storage.dao.review.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.dao.userDb.UserDbStorage;
 
 import java.util.List;
 
@@ -17,24 +15,28 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final FeedService feedService;
 
-
     public Review create(Review review) {
         reviewValidation(review);
-        Review reviewCreated = reviewStorage.create(review);
-        feedService.create(reviewCreated.getUserId(), reviewCreated.getReviewId(), "REVIEW", "ADD");
+
+        final Review reviewCreated = reviewStorage.create(review);
+        feedService.create(reviewCreated.getUserId(), reviewCreated.getReviewId(),
+                "REVIEW", "ADD");
         return reviewCreated;
     }
 
     public Review update(Review review) {
         reviewValidation(review);
-        Review reviewUpdated = reviewStorage.update(review);
-        feedService.create(reviewUpdated.getUserId(), reviewUpdated.getReviewId(), "REVIEW", "UPDATE");
+
+        final Review reviewUpdated = reviewStorage.update(review);
+        feedService.create(reviewUpdated.getUserId(), reviewUpdated.getReviewId(),
+                "REVIEW", "UPDATE");
         return reviewUpdated;
     }
 
     public void delete(Long reviewId) {
         idValidation(reviewId);
-        Review review = getReviewById(reviewId);
+
+        final Review review = getReviewById(reviewId);
         reviewStorage.delete(reviewId);
         feedService.create(review.getUserId(), reviewId, "REVIEW", "REMOVE");
     }
@@ -45,6 +47,7 @@ public class ReviewService {
 
     public Review getReviewById(Long reviewId) {
         idValidation(reviewId);
+
         return reviewStorage.getReviewById(reviewId);
     }
 
@@ -60,6 +63,7 @@ public class ReviewService {
     public void addLike(Long reviewId, Long userId) {
         idValidation(reviewId);
         idValidation(userId);
+
         userService.getUserById(userId);
         reviewStorage.addReaction(reviewId, userId, Boolean.TRUE);
     }
@@ -67,6 +71,7 @@ public class ReviewService {
     public void addDislike(Long reviewId, Long userId) {
         idValidation(reviewId);
         idValidation(userId);
+
         userService.getUserById(userId);
         reviewStorage.addReaction(reviewId, userId, Boolean.FALSE);
     }
@@ -74,6 +79,7 @@ public class ReviewService {
     public void deleteLike(Long reviewId, Long userId) {
         idValidation(reviewId);
         idValidation(userId);
+
         userService.getUserById(userId);
         reviewStorage.deleteReaction(reviewId, userId);
     }
@@ -81,6 +87,7 @@ public class ReviewService {
     public void deleteDislike(Long reviewId, Long userId) {
         idValidation(reviewId);
         idValidation(userId);
+
         userService.getUserById(userId);
         reviewStorage.deleteReaction(reviewId, userId);
     }

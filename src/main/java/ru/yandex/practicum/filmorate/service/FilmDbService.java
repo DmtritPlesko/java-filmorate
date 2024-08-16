@@ -3,9 +3,10 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exeption.NotFoundException;
 import ru.yandex.practicum.filmorate.exeption.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorageInterface;
+import ru.yandex.practicum.filmorate.storage.dao.filmDb.FilmStorageInterface;
 import ru.yandex.practicum.filmorate.storage.dao.filmDb.FilmDbStorage;
 
 import java.time.LocalDate;
@@ -27,13 +28,11 @@ public class FilmDbService {
         this.feedService = feedService;
     }
 
-    //create
     public Film addNewFilm(Film film) {
         checkValidation(film);
         return filmStorage.addNewFilm(film);
     }
 
-    //read
     public Film getFilmById(Long id) {
         return filmStorage.getFilmByID(id);
     }
@@ -51,7 +50,6 @@ public class FilmDbService {
         return filmStorage.getFilmBySort(id, sortBy);
     }
 
-    //update
     public Film updateFilm(Film film) {
         checkValidation(film);
         return filmStorage.update(film);
@@ -60,16 +58,21 @@ public class FilmDbService {
     public void takeLike(Long id, Long userId) {
         filmStorage.takeLike(id, userId);
         feedService.create(userId, id, "LIKE", "ADD");
-
     }
 
-    //delete
     public void deleteLike(Long id, Long userId) {
         filmStorage.deleteLike(id, userId);
         feedService.create(userId, id, "LIKE", "REMOVE");
     }
 
     public List<Film> search(String query, String by) {
+        log.info("Запрос на поиск фильма по названию и/или по режиссёру");
+        if (!by.equals("director") && !by.equals("title")
+                && !by.equals("director,title") && !by.equals("title,director")) {
+            log.error("Параметры запроса переданы неверно");
+            throw new NotFoundException("Параметры запроса переданы неверно");
+        }
+
         return filmStorage.allFilms().stream()
                 .filter((film -> {
                     if (by.equals("title")) {
