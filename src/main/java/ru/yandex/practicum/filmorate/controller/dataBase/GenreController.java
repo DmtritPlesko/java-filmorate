@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller.dataBase;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,11 +12,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/genres")
-public class GenreContorller {
-    private GenreService genreService;
+public class GenreController {
+    private final GenreService genreService;
 
     @Autowired
-    public GenreContorller(GenreService genreService) {
+    public GenreController(GenreService genreService) {
         this.genreService = genreService;
     }
 

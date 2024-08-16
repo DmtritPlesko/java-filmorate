@@ -13,7 +13,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/status")
 public class StatusController {
-    private StatusService statusService;
+    private final StatusService statusService;
 
     @Autowired
     public StatusController(StatusService statusService) {

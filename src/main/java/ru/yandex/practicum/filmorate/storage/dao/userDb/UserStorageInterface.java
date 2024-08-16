@@ -1,8 +1,7 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.dao.userDb;
 
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
-
-import java.util.Collection;
 
 import java.util.List;
 import java.util.Set;
@@ -17,7 +16,7 @@ public interface UserStorageInterface {
 
     void addNewFriend(Long userId, Long friendId);
 
-    public void deleteUser(Long id);
+    void deleteUser(Long id);
 
     void deleteFriend(Long userId, Long friendId);
 
@@ -25,5 +24,9 @@ public interface UserStorageInterface {
 
     Set<User> allFriend(Long userId);
 
-    List<User> getMutualFriends(Long userId, Long friendId);
+    Set<User> getMutualFriends(Long userId, Long friendId);
+
+    List<Feed> getFeed(Long userId);
+
+    void validUser(long id);
 }
