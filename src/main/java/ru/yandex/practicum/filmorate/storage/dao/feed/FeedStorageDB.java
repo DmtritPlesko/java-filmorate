@@ -26,6 +26,7 @@ public class FeedStorageDB implements FeedStorage {
         log.info("Добавление нового события {}", feed);
         final String sqlQuery = "INSERT INTO feeds (user_id, entity_id, event_type, operation, timestamp) " +
                 "VALUES (?, ?, ?, ?, ?);";
+
         try {
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(con -> {
@@ -52,9 +53,12 @@ public class FeedStorageDB implements FeedStorage {
         if (userId == null || userId <= 0) {
             throw new NotFoundException("User с id=" + userId + " не найден");
         }
+
         log.info("Fetching feed for user with id {}", userId);
+
         final String sqlQuery = "SELECT * FROM feeds WHERE user_id = ?";
         List<Feed> feed = jdbcTemplate.query(sqlQuery, FeedRowMapper::mapRow, userId);
+
         log.info("Fetched {} events", feed.size());
         return feed;
     }
